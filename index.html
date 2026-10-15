@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VibeOut Pune — Smart Outing Planner</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#fff1f2',
+              100: '#ffe4e6',
+              500: '#f43f5e',
+              600: '#e11d48',
+              700: '#be123c',
+              dark: '#0f172a'
+            },
+            violet: {
+              600: '#7c3aed',
+              700: '#6d28d9'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbar hiding for smooth horizontal app layout */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass-nav {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-rose-500 selection:text-white pb-20 md:pb-0">
+
+  <!-- TOP MOBILE / DESKTOP HEADER -->
+  <header class="sticky top-0 z-40 glass-nav border-b border-slate-800/80 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTo('home')">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-violet-600 flex items-center justify-center font-extrabold text-white text-xl shadow-lg shadow-rose-500/20">
+        V
+      </div>
+      <div>
+        <h1 class="text-lg font-bold bg-gradient-to-r from-white via-slate-200 to-rose-400 bg-clip-text text-transparent leading-none">VibeOut</h1>
+        <div class="flex items-center gap-1 text-xs text-rose-400 font-medium mt-0.5">
+          <i data-lucide="map-pin" class="w-3 h-3"></i> <span id="current-location-label">Pune, MH</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <button onclick="navigateTo('add-place')" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 transition">
+        <i data-lucide="plus-circle" class="w-4 h-4 text-rose-400"></i> Add Place
+      </button>
+      <button onclick="navigateTo('group')" class="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition">
+        <i data-lucide="users" class="w-5 h-5"></i>
+        <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-slate-950"></span>
+      </button>
+      <button onclick="navigateTo('profile')" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition">
+        <i data-lucide="user" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT CONTAINER -->
+  <main class="max-w-4xl mx-auto px-4 py-6">
+
+    <!-- ================= 1. HOME SCREEN ================= -->
+    <section id="screen-home" class="space-y-8">
+      <!-- Hero Banner -->
+      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-rose-950/60 via-slate-900 to-violet-950/50 p-6 md:p-8 border border-rose-500/20 shadow-2xl">
+        <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 space-y-4">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Smart Outing Assistant
+          </span>
+          <h2 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+            What are you in the <span class="bg-gradient-to-r from-rose-400 to-violet-400 bg-clip-text text-transparent">mood for?</span>
+          </h2>
+          <p class="text-slate-400 text-sm md:text-base max-w-lg">
+            Tell us your group size, budget & time. We’ll generate the perfect Pune outing plan instantly.
+          </p>
+          <div class="pt-2 flex flex-wrap gap-3">
+            <button onclick="startWizard()" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-gradient-to-r from-rose-500 to-violet-600 hover:from-rose-600 hover:to-violet-700 text-white px-6 py-3.5 rounded-2xl font-bold shadow-lg shadow-rose-500/25 transition transform active:scale-95">
+              <i data-lucide="sliders" class="w-5 h-5"></i> Set Outing Preferences
+            </button>
+            <button onclick="runDemoFlow()" class="inline-flex items-center justify-center gap-2 bg-slate-800/90 hover:bg-slate-700 text-white px-5 py-3.5 rounded-2xl font-semibold border border-slate-700 transition">
+              <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i> Quick Demo (4 Friends, Bike)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Mood Grid -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="compass" class="w-5 h-5 text-rose-400"></i> Explore by Vibe
+          </h3>
+          <span class="text-xs text-slate-400">Select any to filter</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <button onclick="quickVibeSearch('Chill')" class="glass-card hover:bg-slate-800/80 p-4 rounded-2xl flex flex-col items-center justify-center text-center transition group">
+            <span class="text-3xl mb-2 group-hover:scale-110 transition transform">😌</span>
+            <span class="font-bold text-sm text-slate-200">Chill</span>
+            <span class="text-[10px] text-slate-400">Cafes & Low-key</span>
+          </button>
+          <button onclick="quickVibeSearch('Fun')" class="glass-card hover:bg-slate-800/80 p-4 rounded-2xl flex flex-col items-center justify-center text-center transition group">
+            <span class="text-3xl mb-2 group-hover:scale-110 transition transform">🎉</span>
+            <span class="font-bold text-sm text-slate-200">Fun</span>
+            <span class="text-[10px] text-slate-400">Activities & Hype</span>
+          </button>
+          <button onclick="quickVibeSearch('Food')" class="glass-card hover:bg-slate-800/80 p-4 rounded-2xl flex flex-col items-center justify-center text-center transition group">
+            <span class="text-3xl mb-2 group-hover:scale-110 transition transform">🍕</span>
+            <span class="font-bold text-sm text-slate-200">Food</span>
+            <span class="text-[10px] text-slate-400">Bites & Desserts</span>
+          </button>
+          <button onclick="quickVibeSearch('Nature')" class="glass-card hover:bg-slate-800/80 p-4 rounded-2xl flex flex-col items-center justify-center text-center transition group">
+            <span class="text-3xl mb-2 group-hover:scale-110 transition transform">🌿</span>
+            <span class="font-bold text-sm text-slate-200">Nature</span>
+            <span class="text-[10px] text-slate-400">Sunsets & Hills</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Popular Spots Near You -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="flame" class="w-5 h-5 text-amber-400"></i> Popular Near Pune
+          </h3>
+          <button onclick="navigateTo('recommendations')" class="text-xs font-semibold text-rose-400 hover:underline">View All</button>
+        </div>
+        <div id="home-popular-list" class="grid sm:grid-cols-2 gap-4">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 2. PREFERENCE WIZARD SCREEN ================= -->
+    <section id="screen-wizard" class="hidden space-y-6">
+      <!-- Progress Bar -->
+      <div class="glass-card p-4 rounded-2xl space-y-2">
+        <div class="flex items-center justify-between text-xs font-semibold text-slate-400">
+          <span id="wizard-step-indicator">Step 1 of 7</span>
+          <span id="wizard-step-title" class="text-rose-400">Location</span>
+        </div>
+        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+          <div id="wizard-progress" class="bg-gradient-to-r from-rose-500 to-violet-500 h-full w-[14%] transition-all duration-300"></div>
+        </div>
+      </div>
+
+      <!-- Wizard Step Container -->
+      <div id="wizard-step-content" class="glass-card p-6 rounded-3xl border border-slate-800 space-y-6 min-h-[360px]">
+        <!-- Dynamic content injected here -->
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="flex items-center justify-between gap-4 pt-2">
+        <button id="wizard-prev-btn" onclick="prevWizardStep()" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition">
+          Back
+        </button>
+        <button id="wizard-next-btn" onclick="nextWizardStep()" class="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-lg shadow-rose-600/20 transition flex items-center gap-2">
+          Next <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= 3. RECOMMENDATIONS SCREEN ================= -->
+    <section id="screen-recommendations" class="hidden space-y-6">
+      <!-- Top Filters bar -->
+      <div class="glass-card p-4 rounded-2xl space-y-3">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Perfect Matches</h2>
+            <p id="rec-summary-tag" class="text-xs text-rose-400 font-medium">Customized for Pune outing</p>
+          </div>
+          <button onclick="startWizard()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-300 flex items-center gap-1.5">
+            <i data-lucide="edit-3" class="w-3.5 h-3.5 text-rose-400"></i> Edit Preferences
+          </button>
+        </div>
+
+        <!-- Filter chips & Sort -->
+        <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800">
+          <select id="filter-sort" onchange="renderRecommendations()" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none">
+            <option value="best">Sort: Best Match</option>
+            <option value="cost">Sort: Lowest Cost</option>
+            <option value="rating">Sort: Highest Rating</option>
+            <option value="distance">Sort: Closest</option>
+          </select>
+          <button onclick="toggleFilter('open')" id="btn-filter-open" class="text-xs border border-slate-700 px-3 py-1.5 rounded-xl text-slate-400 bg-slate-900 hover:border-rose-500/50">
+            Open Now
+          </button>
+          <button onclick="toggleFilter('veg')" id="btn-filter-veg" class="text-xs border border-slate-700 px-3 py-1.5 rounded-xl text-slate-400 bg-slate-900 hover:border-rose-500/50">
+            Pure Veg
+          </button>
+          
+          <button onclick="generateItinerary()" class="ml-auto bg-gradient-to-r from-rose-500 to-violet-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-rose-500/20 flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="w-4 h-4"></i> Plan My Outing
+          </button>
+        </div>
+      </div>
+
+      <!-- Recommendation Cards List -->
+      <div id="recommendations-list" class="space-y-4">
+        <!-- Injected by JS -->
+      </div>
+    </section>
+
+    <!-- ================= 4. PLACE DETAILS SCREEN ================= -->
+    <section id="screen-details" class="hidden space-y-6">
+      <button onclick="navigateTo('recommendations')" class="text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Recommendations
+      </button>
+
+      <div id="details-content" class="glass-card rounded-3xl overflow-hidden border border-slate-800">
+        <!-- Dynamic content injected here -->
+      </div>
+    </section>
+
+    <!-- ================= 5. ITINERARY SCREEN (PLAN MY OUTING) ================= -->
+    <section id="screen-itinerary" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('recommendations')" class="text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Recommendations
+        </button>
+        <button onclick="sharePlan()" class="text-xs bg-violet-600/30 text-violet-300 border border-violet-500/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+          <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Share Plan
+        </button>
+      </div>
+
+      <!-- Plan Header Summary -->
+      <div class="glass-card p-6 rounded-3xl border border-rose-500/30 space-y-4 relative overflow-hidden">
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-rose-400">Generated Itinerary</span>
+            <h2 class="text-2xl font-black text-white" id="itinerary-title">Your Custom Pune Plan</h2>
+            <p class="text-xs text-slate-400 mt-1" id="itinerary-subtitle">4 Friends • Bike Travel • 4 Hours</p>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-black text-emerald-400" id="itinerary-total-cost">₹480</div>
+            <div class="text-[10px] text-slate-400 uppercase tracking-wider">Est. Cost / Person</div>
+          </div>
+        </div>
+
+        <!-- Budget Breakdown Bar -->
+        <div class="grid grid-cols-3 gap-2 p-3 bg-slate-900/80 rounded-2xl text-center text-xs">
+          <div>
+            <div class="text-slate-400 text-[10px]">Activities & Food</div>
+            <div class="font-bold text-slate-200" id="itin-b-spots">₹420</div>
+          </div>
+          <div class="border-x border-slate-800">
+            <div class="text-slate-400 text-[10px]">Est. Travel (Bike)</div>
+            <div class="font-bold text-slate-200" id="itin-b-travel">₹60</div>
+          </div>
+          <div>
+            <div class="text-slate-400 text-[10px]">Your Budget</div>
+            <div class="font-bold text-emerald-400" id="itin-b-budget">₹500</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline Items -->
+      <div id="itinerary-timeline" class="space-y-4 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-slate-800">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+    <!-- ================= 6. GROUP PLANNING SCREEN ================= -->
+    <section id="screen-group" class="hidden space-y-6">
+      <div class="glass-card p-6 rounded-3xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-black text-white">Pune Weekend Group Squad</h2>
+            <p class="text-xs text-slate-400">Collaborative Voting & Decision Room</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+        </div>
+
+        <!-- Group Members -->
+        <div class="flex items-center gap-2 pt-2">
+          <div class="flex -space-x-2">
+            <div class="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center font-bold text-xs ring-2 ring-slate-900">Av</div>
+            <div class="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center font-bold text-xs ring-2 ring-slate-900">Rk</div>
+            <div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center font-bold text-xs ring-2 ring-slate-900">Sn</div>
+            <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs ring-2 ring-slate-900">Pt</div>
+          </div>
+          <span class="text-xs text-slate-400 font-medium">+ 4 friends invited</span>
+        </div>
+      </div>
+
+      <!-- Group Top Pick -->
+      <div class="glass-card p-5 rounded-3xl border border-amber-500/30 space-y-3 bg-gradient-to-r from-amber-950/20 via-slate-900 to-slate-900">
+        <div class="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
+          <i data-lucide="crown" class="w-4 h-4"></i> Group Favorite (3/4 Voted Love)
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-bold text-lg text-white">The High Street Cafe & Bistro</h3>
+            <p class="text-xs text-slate-400">Baner • ₹350/person</p>
+          </div>
+          <button onclick="openPlaceDetails(1)" class="px-3 py-1.5 rounded-xl bg-slate-800 text-xs font-semibold text-slate-200">View</button>
+        </div>
+      </div>
+
+      <!-- Group Voting List -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Vote on Shortlisted Places</h3>
+        <div id="group-voting-list" class="space-y-3">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 7. ADD A PLACE (COMMUNITY) ================= -->
+    <section id="screen-add-place" class="hidden space-y-6">
+      <div class="glass-card p-6 rounded-3xl space-y-4">
+        <div>
+          <h2 class="text-xl font-black text-white">Add a Hidden Gem</h2>
+          <p class="text-xs text-slate-400">Know a cool spot in Pune? Share it with the community!</p>
+        </div>
+
+        <form id="add-place-form" onsubmit="handleAddPlaceSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">Place Name</label>
+            <input required type="text" placeholder="e.g. Sunset Point Cafe" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-rose-500" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Area / Location</label>
+              <input required type="text" placeholder="e.g. Viman Nagar, Pune" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-rose-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Category</label>
+              <select class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-rose-500">
+                <option>Chill</option>
+                <option>Food</option>
+                <option>Fun / Games</option>
+                <option>Nature</option>
+                <option>Adventure</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Est. Cost / Person (₹)</label>
+              <input required type="number" placeholder="300" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-rose-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Best For</label>
+              <input type="text" placeholder="Friends, Couples..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-rose-500" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">What can you do there?</label>
+            <textarea placeholder="Describe the vibe, food recommendations, or activities..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-rose-500 h-20"></textarea>
+          </div>
+
+          <button type="submit" class="w-full bg-gradient-to-r from-rose-500 to-violet-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-rose-500/25 transition">
+            Submit Place for Review
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ================= 8. SAVED & PROFILE SCREEN ================= -->
+    <section id="screen-profile" class="hidden space-y-6">
+      <div class="glass-card p-6 rounded-3xl flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-500 to-violet-600 flex items-center justify-center font-black text-2xl text-white">
+          AP
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-white">Avani Patel</h2>
+          <p class="text-xs text-slate-400">Pune Outing Explorer • Level 3</p>
+          <span class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">5 Saved Plans</span>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Your Saved Plans</h3>
+        <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-slate-200">Koregaon Park Chill Outing</h4>
+            <p class="text-xs text-slate-400">3 Spots • ₹450 / person</p>
+          </div>
+          <button onclick="generateItinerary()" class="text-xs bg-slate-800 hover:bg-slate-700 text-rose-400 font-semibold px-3 py-1.5 rounded-xl">View Plan</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION FOR MOBILE -->
+  <nav class="fixed bottom-0 left-0 right-0 glass-nav border-t border-slate-800 py-2 px-6 flex justify-between items-center z-50 md:hidden">
+    <button onclick="navigateTo('home')" class="nav-btn flex flex-col items-center gap-1 text-rose-500" id="nav-home">
+      <i data-lucide="compass" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold">Explore</span>
+    </button>
+    <button onclick="startWizard()" class="nav-btn flex flex-col items-center gap-1 text-slate-400" id="nav-wizard">
+      <i data-lucide="sliders" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold">Filter</span>
+    </button>
+    <button onclick="generateItinerary()" class="nav-btn flex flex-col items-center gap-1 text-slate-400" id="nav-itin">
+      <i data-lucide="sparkles" class="w-5 h-5 text-amber-400"></i>
+      <span class="text-[10px] font-semibold text-amber-400">Plan</span>
+    </button>
+    <button onclick="navigateTo('group')" class="nav-btn flex flex-col items-center gap-1 text-slate-400" id="nav-group">
+      <i data-lucide="users" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold">Squad</span>
+    </button>
+  </nav>
+
+  <!-- GLOBAL JS APP LOGIC -->
+  <script>
+    // ================= DATA STORE (PUNE SAMPLE PLACES) =================
+    const PUNE_PLACES = [
+      {
+        id: 1,
+        name: "The High Street Cafe & Bistro",
+        category: "Chill",
+        vibeEmoji: "☕",
+        location: "Baner, Pune",
+        distanceKm: 4.2,
+        rating: 4.6,
+        costPerPerson: 320,
+        travelCostEst: 70, // bike est
+        recommendedDuration: "1.5 hrs",
+        badge: "Verified",
+        vegOnly: false,
+        openNow: true,
+        img: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80",
+        whyMatch: ["Within your budget", "Good for chilling", "Close to you", "Suitable for groups"],
+        description: "A cozy aesthetic cafe with relaxed open-air seating, board games, and great cold coffee. Perfect for group conversations and relaxing."
+      },
+      {
+        id: 2,
+        name: "High Voltage Arcade & Bowling",
+        category: "Fun",
+        vibeEmoji: "🎮",
+        location: "Viman Nagar, Pune",
+        distanceKm: 6.5,
+        rating: 4.5,
+        costPerPerson: 300,
+        travelCostEst: 50,
+        recommendedDuration: "1.5 hrs",
+        badge: "Verified",
+        vegOnly: false,
+        openNow: true,
+        img: "https://images.unsplash.com/photo-1511882150382-421056c89033?auto=format&fit=crop&w=600&q=80",
+        whyMatch: ["High fun activity", "Great group friendly vibe", "Budget friendly gaming"],
+        description: "Packed with arcade games, bowling lanes, and VR simulators. Ideal for group competitions and energetic fun."
+      },
+      {
+        id: 3,
+        name: "Vetal Tekdi Sunset Point",
+        category: "Nature",
+        vibeEmoji: "🌅",
+        location: "Kothrud / Paud Road, Pune",
+        distanceKm: 3.8,
+        rating: 4.8,
+        costPerPerson: 0,
+        travelCostEst: 30,
+        recommendedDuration: "1.0 hr",
+        badge: "Community Added",
+        vegOnly: true,
+        openNow: true,
+        img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+        whyMatch: ["Zero entry cost", "Panoramic Pune view", "Great for relaxation"],
+        description: "The highest point in Pune city. Offers fresh air, lush green paths, and spectacular sunset vistas over the city skyline."
+      },
+      {
+        id: 4,
+        name: "Irani Cafe & Bakery",
+        category: "Food",
+        vibeEmoji: "🍕",
+        location: "Koregaon Park, Pune",
+        distanceKm: 5.1,
+        rating: 4.7,
+        costPerPerson: 180,
+        travelCostEst: 40,
+        recommendedDuration: "1.0 hr",
+        badge: "Verified",
+        vegOnly: false,
+        openNow: true,
+        img: "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=600&q=80",
+        whyMatch: ["Super affordable", "Iconic Bun Maska & Chai", "Fast service"],
+        description: "Classic vintage ambiance serving authentic Irani chai, bun maska, kheema pav, and fresh bakery treats."
+      },
+      {
+        id: 5,
+        name: "FC Road Shopping Alley",
+        category: "Shopping",
+        vibeEmoji: "🛍️",
+        location: "Deccan Gymkhana, Pune",
+        distanceKm: 2.5,
+        rating: 4.3,
+        costPerPerson: 250,
+        travelCostEst: 20,
+        recommendedDuration: "2.0 hrs",
+        badge: "Verified",
+        vegOnly: false,
+        openNow: true,
+        img: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80",
+        whyMatch: ["Street shopping paradise", "Central Pune location", "Bustling vibe"],
+        description: "Vibrant street market famous for trendy clothing, footwear, accessories, and cheap street food stalls."
+      }
+    ];
+
+    // USER PREFERENCES STATE
+    let userState = {
+      city: "Pune",
+      groupType: "Friends",
+      peopleCount: 4,
+      vibes: ["Chill", "Food"],
+      budgetId: 2, // ₹300–₹500
+      budgetMax: 500,
+      timeAvailable: "4 hours",
+      transport: "Bike",
+      maxDistanceKm: 10,
+      activeFilters: {
+        openNow: false,
+        veg: false
+      }
+    };
+
+    // WIZARD STEP CONTROL
+    let currentWizardStep = 1;
+    const TOTAL_STEPS = 7;
+
+    // INIT APP
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      renderHomePopular();
+      renderRecommendations();
+      renderGroupVoting();
+    });
+
+    // NAVIGATION SYSTEM
+    function navigateTo(screenId) {
+      const screens = ['home', 'wizard', 'recommendations', 'details', 'itinerary', 'group', 'add-place', 'profile'];
+      screens.forEach(s => {
+        const el = document.getElementById(`screen-${s}`);
+        if (el) el.classList.add('hidden');
+      });
+      document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+
+      // Scroll top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ================= WIZARD LOGIC =================
+    function startWizard() {
+      currentWizardStep = 1;
+      updateWizardUI();
+      navigateTo('wizard');
+    }
+
+    function updateWizardUI() {
+      document.getElementById('wizard-step-indicator').innerText = `Step ${currentWizardStep} of ${TOTAL_STEPS}`;
+      const progressPercent = Math.round((currentWizardStep / TOTAL_STEPS) * 100);
+      document.getElementById('wizard-progress').style.width = `${progressPercent}%`;
+
+      const container = document.getElementById('wizard-step-content');
+      const titleEl = document.getElementById('wizard-step-title');
+
+      if (currentWizardStep === 1) {
+        titleEl.innerText = "Location";
+        container.innerHTML = `
+          <h3 class="text-xl font-extrabold text-white">Where are you going out?</h3>
+          <p class="text-xs text-slate-400">Select your base city for personalized suggestions.</p>
+          <div class="space-y-3 pt-2">
+            <button onclick="userState.city='Pune'; nextWizardStep();" class="w-full text-left p-4 rounded-2xl bg-slate-900 border-2 border-rose-500/80 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-white">Pune, Maharashtra</div>
+                <div class="text-xs text-slate-400">Baner, KP, Kothrud, Viman Nagar</div>
+              </div>
+              <i data-lucide="check-circle" class="w-5 h-5 text-rose-500"></i>
+            </button>
+            <div class="opacity-50 space-y-2">
+              <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-slate-500 text-xs flex justify-between items-center">
+                <span>Mumbai (Coming Soon)</span>
+                <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded">Soon</span>
+              </div>
+              <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-slate-500 text-xs flex justify-between items-center">
+                <span>Bengaluru (Coming Soon)</span>
+                <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded">Soon</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (currentWizardStep === 2) {
+        titleEl.innerText = "Group Squad";
+        container.innerHTML = `
+          <h3 class="text-xl font-extrabold text-white">Who are you going with?</h3>
+          <div class="grid grid-cols-2 gap-3">
+            ${['Friends', 'Partner', 'Family', 'Solo'].map(g => `
+              <button onclick="userState.groupType='${g}'; renderWizardStep2Group();" class="p-4 rounded-2xl text-center border transition ${userState.groupType === g ? 'bg-rose-500/20 border-rose-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-300'}">
+                ${g === 'Friends' ? '👥' : g === 'Partner' ? '❤️' : g === 'Family' ? '👨‍👩‍👧' : '🧘'} ${g}
+              </button>
+            `).join('')}
+          </div>
+          <div class="pt-4 border-t border-slate-800">
+            <label class="block text-xs font-bold text-slate-300 mb-2">How many people total?</label>
+            <div class="flex items-center gap-4">
+              <input type="range" min="1" max="10" value="${userState.peopleCount}" oninput="userState.peopleCount = parseInt(this.value); document.getElementById('people-val').innerText = this.value + ' People';" class="w-full accent-rose-500">
+              <span id="people-val" class="font-extrabold text-rose-400 text-base min-w-[70px]">${userState.peopleCount} People</span>
+            </div>
+          </div>
+        `;
+      } else if (currentWizardStep === 3) {
+        titleEl.innerText = "Vibe & Category";
+        const vibes = [
+          { name: "Chill", emoji: "😌" },
+          { name: "Fun", emoji: "🎉" },
+          { name: "Food", emoji: "🍕" },
+          { name: "Nature", emoji: "🌿" },
+          { name: "Shopping", emoji: "🛍️" },
+          { name: "Adventure", emoji: "🧗" }
+        ];
+        container.innerHTML = `
+          <h3 class="text-xl font-extrabold text-white">What do you want to do?</h3>
+          <p class="text-xs text-slate-400">Select one or multiple vibes.</p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            ${vibes.map(v => {
+              const selected = userState.vibes.includes(v.name);
+              return `
+                <button onclick="toggleVibeSelection('${v.name}')" class="p-4 rounded-2xl flex flex-col items-center border transition ${selected ? 'bg-rose-500/20 border-rose-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}">
+                  <span class="text-2xl mb-1">${v.emoji}</span>
+                  <span class="text-xs">${v.name}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        `;
+      } else if (currentWizardStep === 4) {
+        titleEl.innerText = "Budget";
+        const budgetOpts = [
+          { max: 300, label: "Under ₹300 / person" },
+          { max: 500, label: "₹300 – ₹500 / person" },
+          { max: 1000, label: "₹500 – ₹1,000 / person" },
+          { max: 2000, label: "₹1,000 – ₹2,000 / person" }
+        ];
+        container.innerHTML = `
+          <h3 class="text-xl font-extrabold text-white">What's your budget per person?</h3>
+          <div class="space-y-3 pt-2">
+            ${budgetOpts.map(b => `
+              <button onclick="userState.budgetMax = ${b.max}; updateWizardUI();" class="w-full text-left p-4 rounded-2xl border transition ${userState.budgetMax === b.max ? 'bg-rose-500/20 border-rose-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-300'}">
+                ${b.label}
+              </button>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentWizardStep === 5) {
+        titleEl.innerText = "Available Time";
+        const timeOpts = ["1–2 hours", "2–4 hours", "4–6 hours", "Full day"];
+        container.innerHTML = `
+          <h3 class="text-xl font-extrabold text-white">How much time do you have?</h3>
+          <div class="space-y-3 pt-2">
+            ${timeOpts.map(t => `
+              <button onclick="userState.timeAvailable = '${t}'; updateWizardUI();" class="w-full text-left p-4 rounded-2xl border transition ${userState.timeAvailable === t ? 'bg-rose-500/20 border-rose-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-300'}">
+                ⏱️ ${t}
+              </button>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentWizardStep === 6) {
+        titleEl.innerText = "Transportation";
+        const transOpts = [
+          { mode: "Bike", emoji: "🏍️", estCost: "~₹30-60/person" },
+          { mode: "Car", emoji: "🚗", estCost: "~₹80-120/person" },
+          { mode: "Cab", emoji: "🚕", estCost: "~₹150-250/person" },
+          { mode: "Walking / Metro", emoji: "🚶", estCost: "~₹10-30/person" }
+        ];
+        container.innerHTML = `
+          <h3 class="text-xl font-extrabold text-white">How are you travelling?</h3>
+          <p class="text-xs text-slate-400">Used to estimate fuel/cab costs dynamically.</p>
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            ${transOpts.map(t => `
+              <button onclick="userState.transport = '${t.mode}'; updateWizardUI();" class="p-4 rounded-2xl text-left border transition ${userState.transport === t.mode ? 'bg-rose-500/20 border-rose-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-300'}">
+                <div class="text-2xl mb-1">${t.emoji}</div>
+                <div class="font-bold text-sm">${t.mode}</div>
+                <div class="text-[10px] text-slate-400 mt-1">${t.estCost}</div>
+              </button>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentWizardStep === 7) {
+        titleEl.innerText = "Distance Limit";
+        const distOpts = [3, 5, 10, 20];
+        container.innerHTML = `
+          <h3 class="text-xl font-extrabold text-white">How far are you willing to go?</h3>
+          <div class="space-y-3 pt-2">
+            ${distOpts.map(d => `
+              <button onclick="userState.maxDistanceKm = ${d}; updateWizardUI();" class="w-full text-left p-4 rounded-2xl border transition ${userState.maxDistanceKm === d ? 'bg-rose-500/20 border-rose-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-300'}">
+                📍 Within ${d} km of Pune center
+              </button>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      lucide.createIcons();
+    }
+
+    function toggleVibeSelection(vibe) {
+      if (userState.vibes.includes(vibe)) {
+        userState.vibes = userState.vibes.filter(v => v !== vibe);
+      } else {
+        userState.vibes.push(vibe);
+      }
+      updateWizardUI();
+    }
+
+    function nextWizardStep() {
+      if (currentWizardStep < TOTAL_STEPS) {
+        currentWizardStep++;
+        updateWizardUI();
+      } else {
+        // Finished wizard! Show recommendations
+        renderRecommendations();
+        navigateTo('recommendations');
+      }
+    }
+
+    function prevWizardStep() {
+      if (currentWizardStep > 1) {
+        currentWizardStep--;
+        updateWizardUI();
+      } else {
+        navigateTo('home');
+      }
+    }
+
+    // ================= SPECIFIC DEMO FLOW (4 Friends, Pune, ₹500, Bike, Chill+Food) =================
+    function runDemoFlow() {
+      userState = {
+        city: "Pune",
+        groupType: "Friends",
+        peopleCount: 4,
+        vibes: ["Chill", "Food"],
+        budgetMax: 500,
+        timeAvailable: "4 hours",
+        transport: "Bike",
+        maxDistanceKm: 10,
+        activeFilters: { openNow: false, veg: false }
+      };
+      renderRecommendations();
+      navigateTo('recommendations');
+    }
+
+    function quickVibeSearch(vibe) {
+      userState.vibes = [vibe];
+      renderRecommendations();
+      navigateTo('recommendations');
+    }
+
+    // ================= RECOMMENDATIONS ENGINE =================
+    function renderRecommendations() {
+      const listContainer = document.getElementById('recommendations-list');
+      document.getElementById('rec-summary-tag').innerText = `${userState.peopleCount} ${userState.groupType} • Max ₹${userState.budgetMax}/person • ${userState.transport} • Pune`;
+
+      // Filter logic
+      let matches = PUNE_PLACES.filter(place => {
+        if (place.costPerPerson > userState.budgetMax) return false;
+        if (place.distanceKm > userState.maxDistanceKm) return false;
+        if (userState.activeFilters.veg && !place.vegOnly) return false;
+        return true;
+      });
+
+      // Sorting logic
+      const sortVal = document.getElementById('filter-sort').value;
+      if (sortVal === 'cost') matches.sort((a,b) => a.costPerPerson - b.costPerPerson);
+      else if (sortVal === 'rating') matches.sort((a,b) => b.rating - a.rating);
+      else if (sortVal === 'distance') matches.sort((a,b) => a.distanceKm - b.distanceKm);
+
+      if (matches.length === 0) {
+        listContainer.innerHTML = `
+          <div class="text-center py-12 glass-card rounded-3xl space-y-3">
+            <span class="text-4xl">🔍</span>
+            <h3 class="font-bold text-white text-lg">No exact match found</h3>
+            <p class="text-xs text-slate-400 max-w-xs mx-auto">Try broadening your distance or budget limit.</p>
+            <button onclick="startWizard()" class="px-4 py-2 bg-rose-600 text-xs font-bold text-white rounded-xl">Adjust Preferences</button>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = matches.map(place => {
+        const totalEst = place.costPerPerson + place.travelCostEst;
+        return `
+          <div class="glass-card rounded-3xl overflow-hidden border border-slate-800 hover:border-slate-700 transition">
+            <div class="flex flex-col sm:flex-row">
+              <div class="sm:w-2/5 h-48 sm:h-auto relative overflow-hidden">
+                <img src="${place.img}" alt="${place.name}" class="w-full h-full object-cover">
+                <span class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-slate-700">
+                  ${place.category} ${place.vibeEmoji}
+                </span>
+                <span class="absolute bottom-3 left-3 ${place.badge === 'Verified' ? 'bg-emerald-500/90' : 'bg-amber-500/90'} text-slate-950 text-[10px] font-extrabold px-2 py-0.5 rounded">
+                  ${place.badge === 'Verified' ? '✓ Verified' : 'Community Added'}
+                </span>
+              </div>
+              <div class="sm:w-3/5 p-5 flex flex-col justify-between space-y-4">
+                <div>
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <h3 class="font-extrabold text-lg text-white leading-snug">${place.name}</h3>
+                      <p class="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                        <i data-lucide="map-pin" class="w-3 h-3 text-rose-400"></i> ${place.location} (${place.distanceKm} km away)
+                      </p>
+                    </div>
+                    <span class="flex items-center gap-1 bg-amber-500/10 text-amber-400 font-extrabold text-xs px-2 py-1 rounded-lg border border-amber-500/20">
+                      ⭐ ${place.rating}
+                    </span>
+                  </div>
+
+                  <!-- Why Match Badges -->
+                  <div class="flex flex-wrap gap-1.5 mt-3">
+                    ${place.whyMatch.map(w => `
+                      <span class="text-[10px] font-semibold bg-rose-500/10 text-rose-300 px-2 py-0.5 rounded-md border border-rose-500/20">
+                        ✓ ${w}
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Price & Travel Breakdown -->
+                <div class="grid grid-cols-3 gap-2 p-2.5 bg-slate-900/90 rounded-xl text-center">
+                  <div>
+                    <div class="text-[9px] text-slate-400">Place Cost</div>
+                    <div class="text-xs font-bold text-slate-200">₹${place.costPerPerson}/p</div>
+                  </div>
+                  <div class="border-x border-slate-800">
+                    <div class="text-[9px] text-slate-400">Est. Travel</div>
+                    <div class="text-xs font-bold text-slate-300">~₹${place.travelCostEst}/p</div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] text-slate-400">Total Est.</div>
+                    <div class="text-xs font-extrabold text-emerald-400">₹${totalEst}/p</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 pt-1">
+                  <button onclick="openPlaceDetails(${place.id})" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs py-2.5 rounded-xl border border-slate-700 transition">
+                    View Details
+                  </button>
+                  <button onclick="generateItinerary()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md transition">
+                    + Add to Plan
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function toggleFilter(type) {
+      if (type === 'open') {
+        userState.activeFilters.openNow = !userState.activeFilters.openNow;
+        document.getElementById('btn-filter-open').classList.toggle('border-rose-500');
+      } else if (type === 'veg') {
+        userState.activeFilters.veg = !userState.activeFilters.veg;
+        document.getElementById('btn-filter-veg').classList.toggle('border-rose-500');
+      }
+      renderRecommendations();
+    }
+
+    // ================= PLACE DETAILS SCREEN =================
+    function openPlaceDetails(placeId) {
+      const place = PUNE_PLACES.find(p => p.id === placeId);
+      if (!place) return;
+
+      const container = document.getElementById('details-content');
+      container.innerHTML = `
+        <div class="relative h-64 overflow-hidden">
+          <img src="${place.img}" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+          <div class="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+            <div>
+              <span class="text-xs font-bold bg-rose-500 text-white px-2.5 py-1 rounded-full">${place.category}</span>
+              <h2 class="text-2xl font-black text-white mt-1">${place.name}</h2>
+              <p class="text-xs text-slate-300">${place.location}</p>
+            </div>
+            <span class="text-sm font-bold bg-slate-900/90 text-amber-400 px-3 py-1.5 rounded-xl border border-slate-700">⭐ ${place.rating}</span>
+          </div>
+        </div>
+
+        <div class="p-6 space-y-6">
+          <p class="text-sm text-slate-300 leading-relaxed">${place.description}</p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div class="p-3 bg-slate-900 rounded-2xl border border-slate-800">
+              <div class="text-[10px] text-slate-400">Est. Place Cost</div>
+              <div class="font-extrabold text-white text-sm">₹${place.costPerPerson} / person</div>
+            </div>
+            <div class="p-3 bg-slate-900 rounded-2xl border border-slate-800">
+              <div class="text-[10px] text-slate-400">Travel Cost (${userState.transport})</div>
+              <div class="font-extrabold text-slate-200 text-sm">~₹${place.travelCostEst} / person</div>
+            </div>
+            <div class="p-3 bg-slate-900 rounded-2xl border border-slate-800">
+              <div class="text-[10px] text-slate-400">Suggested Time</div>
+              <div class="font-extrabold text-slate-200 text-sm">${place.recommendedDuration}</div>
+            </div>
+            <div class="p-3 bg-slate-900 rounded-2xl border border-slate-800">
+              <div class="text-[10px] text-slate-400">Distance</div>
+              <div class="font-extrabold text-slate-200 text-sm">${place.distanceKm} km</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 pt-2">
+            <button onclick="generateItinerary()" class="flex-1 bg-gradient-to-r from-rose-500 to-violet-600 text-white font-bold py-3 rounded-xl text-xs shadow-lg">
+              Include in My Outing Plan
+            </button>
+            <button onclick="alert('Simulating directions via Google Maps API...')" class="px-4 py-3 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs border border-slate-700">
+              Navigate
+            </button>
+          </div>
+        </div>
+      `;
+
+      navigateTo('details');
+      lucide.createIcons();
+    }
+
+    // ================= ITINERARY GENERATOR =================
+    function generateItinerary() {
+      // Create visual timeline out of places
+      const spot1 = PUNE_PLACES[1]; // Arcade
+      const spot2 = PUNE_PLACES[0]; // Cafe
+      const spot3 = PUNE_PLACES[2]; // Sunset point
+
+      const totalPlaceCost = spot1.costPerPerson + spot2.costPerPerson + spot3.costPerPerson;
+      const totalTravelEst = 60;
+      const finalTotal = totalPlaceCost + totalTravelEst;
+
+      document.getElementById('itinerary-title').innerText = `Your ${userState.city} Custom Outing`;
+      document.getElementById('itinerary-subtitle').innerText = `${userState.peopleCount} ${userState.groupType} • ${userState.transport} • ${userState.timeAvailable}`;
+      document.getElementById('itinerary-total-cost').innerText = `₹${finalTotal}`;
+
+      document.getElementById('itin-b-spots').innerText = `₹${totalPlaceCost}`;
+      document.getElementById('itin-b-travel').innerText = `₹${totalTravelEst}`;
+      document.getElementById('itin-b-budget').innerText = `₹${userState.budgetMax}`;
+
+      const timelineContainer = document.getElementById('itinerary-timeline');
+      timelineContainer.innerHTML = `
+        <!-- Timeline Item 1 -->
+        <div class="relative pl-12 space-y-2">
+          <div class="absolute left-3 top-1 -translate-x-1/2 w-6 h-6 rounded-full bg-rose-500 text-white font-bold text-xs flex items-center justify-center ring-4 ring-slate-950">1</div>
+          <div class="text-xs font-bold text-rose-400">3:00 PM • Start Activity</div>
+          <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <h4 class="font-bold text-white text-sm">${spot1.name}</h4>
+              <p class="text-xs text-slate-400">${spot1.category} • Est. ₹${spot1.costPerPerson}/person</p>
+            </div>
+            <span class="text-xs bg-slate-800 px-2.5 py-1 rounded-lg text-slate-300 font-semibold">${spot1.recommendedDuration}</span>
+          </div>
+        </div>
+
+        <!-- Travel Transit Badge -->
+        <div class="relative pl-12 py-1">
+          <div class="text-[11px] font-semibold text-slate-500 bg-slate-900 border border-slate-800 rounded-full px-3 py-1 inline-flex items-center gap-1">
+            <i data-lucide="bike" class="w-3.5 h-3.5 text-rose-400"></i> ~10 min travel (Bike)
+          </div>
+        </div>
+
+        <!-- Timeline Item 2 -->
+        <div class="relative pl-12 space-y-2">
+          <div class="absolute left-3 top-1 -translate-x-1/2 w-6 h-6 rounded-full bg-rose-500 text-white font-bold text-xs flex items-center justify-center ring-4 ring-slate-950">2</div>
+          <div class="text-xs font-bold text-rose-400">4:45 PM • Cafe & Chill</div>
+          <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <h4 class="font-bold text-white text-sm">${spot2.name}</h4>
+              <p class="text-xs text-slate-400">${spot2.category} • Est. ₹${spot2.costPerPerson}/person</p>
+            </div>
+            <span class="text-xs bg-slate-800 px-2.5 py-1 rounded-lg text-slate-300 font-semibold">${spot2.recommendedDuration}</span>
+          </div>
+        </div>
+
+        <!-- Travel Transit Badge -->
+        <div class="relative pl-12 py-1">
+          <div class="text-[11px] font-semibold text-slate-500 bg-slate-900 border border-slate-800 rounded-full px-3 py-1 inline-flex items-center gap-1">
+            <i data-lucide="bike" class="w-3.5 h-3.5 text-rose-400"></i> ~15 min scenic travel
+          </div>
+        </div>
+
+        <!-- Timeline Item 3 -->
+        <div class="relative pl-12 space-y-2">
+          <div class="absolute left-3 top-1 -translate-x-1/2 w-6 h-6 rounded-full bg-rose-500 text-white font-bold text-xs flex items-center justify-center ring-4 ring-slate-950">3</div>
+          <div class="text-xs font-bold text-rose-400">6:30 PM • Sunset View</div>
+          <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <h4 class="font-bold text-white text-sm">${spot3.name}</h4>
+              <p class="text-xs text-slate-400">${spot3.category} • Free Entry</p>
+            </div>
+            <span class="text-xs bg-slate-800 px-2.5 py-1 rounded-lg text-slate-300 font-semibold">${spot3.recommendedDuration}</span>
+          </div>
+        </div>
+      `;
+
+      navigateTo('itinerary');
+      lucide.createIcons();
+    }
+
+    function sharePlan() {
+      alert("Plan link copied to clipboard! Share with your squad.");
+    }
+
+    // ================= GROUP VOTING LOGIC =================
+    function renderGroupVoting() {
+      const container = document.getElementById('group-voting-list');
+      const samplePlaces = [PUNE_PLACES[0], PUNE_PLACES[1], PUNE_PLACES[3]];
+
+      container.innerHTML = samplePlaces.map(place => `
+        <div class="glass-card p-4 rounded-2xl border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-bold text-white text-sm">${place.name}</h4>
+              <p class="text-xs text-slate-400">${place.location} • ₹${place.costPerPerson}/person</p>
+            </div>
+            <span class="text-xs font-bold text-slate-300">${place.category}</span>
+          </div>
+          <div class="flex items-center justify-between border-t border-slate-800/80 pt-2">
+            <span class="text-[10px] text-slate-400">Vote:</span>
+            <div class="flex items-center gap-2">
+              <button onclick="registerVote(this)" class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold hover:border-rose-500">❤️ Love it</button>
+              <button onclick="registerVote(this)" class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold hover:border-emerald-500">👍 Good</button>
+              <button onclick="registerVote(this)" class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold hover:border-slate-500">👎 Skip</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function registerVote(btn) {
+      btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('bg-rose-600', 'text-white'));
+      btn.classList.add('bg-rose-600', 'text-white');
+    }
+
+    // ================= HOME POPULAR LIST =================
+    function renderHomePopular() {
+      const container = document.getElementById('home-popular-list');
+      container.innerHTML = PUNE_PLACES.slice(0, 2).map(place => `
+        <div onclick="openPlaceDetails(${place.id})" class="glass-card rounded-2xl overflow-hidden cursor-pointer hover:border-slate-700 transition flex">
+          <img src="${place.img}" class="w-28 h-28 object-cover">
+          <div class="p-3 flex flex-col justify-between flex-1">
+            <div>
+              <h4 class="font-bold text-white text-sm line-clamp-1">${place.name}</h4>
+              <p class="text-xs text-slate-400">${place.location}</p>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-rose-400">₹${place.costPerPerson}/person</span>
+              <span class="text-amber-400 font-bold">⭐ ${place.rating}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ================= ADD PLACE SUBMIT =================
+    function handleAddPlaceSubmit(e) {
+      e.preventDefault();
+      alert("Thanks! Your place has been submitted for community verification. Once verified, it will display the Verified badge.");
+      e.target.reset();
+      navigateTo('home');
+    }
+  </script>
+</body>
+</html>
